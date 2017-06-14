@@ -10,7 +10,6 @@
         html {
             width: 100%;
             height: 100%;
-            overflow-x: hidden;
         }
         body {
             text-align: left;
@@ -19,7 +18,6 @@
             -webkit-tap-highlight-color: rgba(0,0,0,.05);
             -webkit-touch-callout: none;
             -webkit-user-select: none;
-            background: #e9dfc7;
             overflow-y: scroll;
             overflow-x: hidden;
         }
@@ -27,13 +25,15 @@
             display: flex;
             flex-flow: column;
             min-height: 100%;
+            background: #e9dfc7;
+            color: #555;
         }
         .m-read-content{
             font-size: 12px;
-            color: #555;
             line-height: 31px;
             padding: 15px;
             flex: 1;
+           
         }
         .m-read-content h4{
             font-size: 20px;
@@ -47,7 +47,6 @@
             margin: 0.5em 0;
             letter-spacing: 0px;
             line-height: 24px;
-
         }
         .u-tab{
             height: 34px;
@@ -230,11 +229,10 @@
             position: fixed;
             z-index: 104;
             width: 100%;
-            height: 40%;
-            top:30%;
+            height: 35%;
+            top:25%;
             left:0;
         }
-
     </style>
 </head>
 
@@ -267,7 +265,7 @@
         <button id="large-font" class="font-size-button">大</button>
         <button id="small-font" class="font-size-button">小</button>
     </div>
-    <div class="chlid-mod">
+    <div class="chlid-mod toggle-container-hook">
         <span>背景</span>
         <div class="bg-container">
             <div class="bg-container-current"></div>
@@ -345,19 +343,74 @@
             font_button:$($('.bottom-nav').find('.item')[1]),
             bottom_nav_pannel:$('.bottom-nav-pannel'),
             body:$('body'),
-            icon_mode:$('#icon_mode')
+            icon_mode:$('#icon_mode'),
+            container:$('.container'),
+            toggle_bg_container:$('.toggle-container-hook'),
+            toggle_bg_item:$('.toggle-container-hook').find('.bg-container')
         };
-
+        
+        var colorArr = [{
+            value : '#f7eee5',
+            name : '米白',
+            font : '#555'
+        }, {
+            value : '#e9dfc7',
+            name : '纸张',
+            font : '#555'
+        }, {
+            value : '#a4a4a4',
+            name : '浅灰',
+            font : '#555'
+        }, {
+            value : '#cdefce',
+            name : '护眼',
+            font : '#555'
+        }, {
+            value : '#283548',
+            name : '灰蓝',
+            font : '#7685a2',
+            bottomcolor : '#fff'
+        }];
+       
         var Win = $(window);
         var Doc = $(document);
         var RootContainer = $('#fiction_container');
         var initFontSize = Util.StorageGetter('font-size')|| 14;
+        var bgColor = Util.StorageGetter('bg-color')|| '#e9dfc7';
+        var fontColor= Util.StorageGetter('font-color')|| '#555';
         var NightMode = true;
         var readerUI;
         var readerModel;
-
+        var dataT;
+        
         initFontSize = parseInt(initFontSize);
+        
         RootContainer.css('font-size',initFontSize);
+        Dom.container.css('color',fontColor);
+        Dom.container.css('background-color',bgColor);
+        
+        for (let i = 0; i < colorArr.length; i++) {
+			$(Dom.toggle_bg_item[i]).click(
+				function(){
+					Dom.container.css('background-color',colorArr[i].value);
+					colorArr[i].font && Dom.container.css('color',colorArr[i].font);
+					bgColor = colorArr[i].value;
+					fontColor = colorArr[i].font;
+					Util.StorageSetter('bg-color',colorArr[i].value);
+					Util.StorageSetter('font-color',colorArr[i].font);
+				}
+			)
+		}
+
+      /*  var readerModel = ReaderModel(Fiction_id || 13359, Chapter_id, function(data) {
+            readerUIFrame(data);
+            Dom.bottom_tool_bar.show();
+            setTimeout(function() {
+                ScrollLock = false;
+                Screen.scrollTop = 0;
+            }, 20);
+        });*/
+
         function main() {
             //项目的入口函数
             readerModel = ReaderModel();
@@ -367,7 +420,6 @@
             });
             _eventHanlder();
         }
-
         function ReaderModel() {
             //实现和阅读器数据交互的方法
             var Chapter_id=0;
@@ -418,6 +470,18 @@
                     }
                 },'json')
             };
+           // 获取下一页内容
+           var getNextChapterContent = function (Chapter_id) {
+               Chapter_id = Chapter_id +1;
+               $.get('data/data' + Chapter_id + '.json',function (data) {
+                   if(data.result === 0){
+                       var url = data.jsonp;
+                       Util.getJSONP(url,function (data) {
+                           dataT = data;
+                       })
+                   }
+               },'json')
+           };
            /* var getCurChapterContentPromise =function() {
                return new Promise(function (resolve, reject) {
                     $.get('data/data' + Chapter_id + '.json', function (data) {
@@ -441,8 +505,6 @@
                 Chapter_id  -= 1;
                 Util.StorageSetter('last_chapter_id', Chapter_id);
                 getCurChapterContent(Chapter_id,UIcallback)
-
-
             };
             var nextChapter = function (UIcallback) {
                 Chapter_id = parseInt(Chapter_id,10);
@@ -455,7 +517,6 @@
                 }
                 Util.StorageSetter('last_chapter_id', Chapter_id);
                 getCurChapterContent(Chapter_id,UIcallback);
-
             };
             return {
                 init:init,
@@ -465,7 +526,7 @@
         }
         function ReaderBaseFrame(container) {
             //渲染基本的UI结构
-            function parseChapterData(jsonData) {
+            function parseChapterData(jsonData){
                 var jsonObj = JSON.parse(jsonData);
                 var html = '<h4>' + jsonObj.t + '</h4>';
                 for(var i=0;i<jsonObj.p.length;i++){
@@ -475,6 +536,7 @@
             }
             return function (data) {
                 container.html(parseChapterData(data));
+                window.scrollTo(0,0)
             }
         }
 
@@ -483,12 +545,13 @@
             //touch
             //zepto tap click事件在安卓4.0之前会有300ms延时，4.0没有了
             $('#action_mid').click(function () {
+                Dom.bottom_nav_pannel.hide()
                 if(Dom.top_nav.css('display') === 'none'){
                     Dom.bottom_nav.show();
-                    Dom.top_nav.show()
+                    Dom.top_nav.show();
                 }else{
                     Dom.bottom_nav.hide();
-                    Dom.top_nav.hide()
+                    Dom.top_nav.hide();
                 }
             });
             Win.scroll(function () {
@@ -522,22 +585,28 @@
             });
             // 夜间模式的切换
             Dom.night_button.click(function () {
-                console.log('night');
                 if(NightMode){
                     console.log($(Dom.icon_mode.find('.text')));
                     $(Dom.night_button.find('.icon')).removeClass().addClass('icon icon-day');
-                    Dom.body.css('background-color','#1D1C0B');
+                    Dom.container.css('background-color','#1D1C0B');
+                    Dom.container.css('color','#7685a2')
                     $(Dom.icon_mode.find('.text')).text("夜间");
                     NightMode = false;
                 }else{
                     console.log(2);
                     $(Dom.night_button.find('.icon')).removeClass().addClass('icon icon-night');
-                    Dom.body.css('background-color','#e9dfc7');
+                    Dom.container.css('background-color','#e9dfc7');
                     $(Dom.icon_mode.find('.text')).text("白天");
+                    Dom.container.css('color','#555')
                     NightMode = true;
                 }
-                //触发背景切换事件
+                
             });
+            
+            // 字体和背景的切换
+           
+
+            // 字体设置
             $('#large-font').click(function (event) {
                 initFontSize<= 20 && initFontSize++;
                 RootContainer.css('font-size',initFontSize);
@@ -549,19 +618,7 @@
                 Util.StorageSetter('font-size',initFontSize)
             });
         }
-
-
         main();
-
-
-
-
-
-
-
-
-
-
 
     })();
 </script>
