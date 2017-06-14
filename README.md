@@ -1,5 +1,5 @@
-#README
-私下练手项目
+# README
+**私下练手项目**
 
 主要是熟练flex布局和跨域的使用
 
@@ -13,7 +13,7 @@
 
 **效果如下**
 
-![gif](http://bolg-1.oss-cn-hangzhou.aliyuncs.com/6.14.1.gif)
+![gif](http://bolg-1.oss-cn-hangzhou.aliyuncs.com/demo3.gif)
 
 ![gif](http://bolg-1.oss-cn-hangzhou.aliyuncs.com/demo2.gif)
 
