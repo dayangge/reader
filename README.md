@@ -13,6 +13,7 @@
 
 **效果如下**
 
-![gif](F:\BaiduNetdiskDownload/demo1.gif)
+![gif](http://bolg-1.oss-cn-hangzhou.aliyuncs.com/6.14.1.gif)
 
+![gif](http://bolg-1.oss-cn-hangzhou.aliyuncs.com/demo2.gif)
 
