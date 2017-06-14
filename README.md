@@ -1,4 +1,4 @@
-#README
+# README
 私下练手项目
 
 主要是熟练flex布局和跨域的使用
